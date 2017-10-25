@@ -159,9 +159,10 @@ class BidirectionalInterface:
                 pass
 
             # send to tid
-            print len(data)
+            # print len(data)
             if len(data) is not 0:
                 data = (int)(data)
+				print 'sending: ', data
                 self.bci.id_msg_bus.SetEvent(data)
                 self.bci.iDsock_bus.sendall(self.bci.id_serializer_bus.Serialize())
 
