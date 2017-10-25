@@ -6,7 +6,7 @@ from BCI import BciInterface
 
 if __name__ == "__main__":
     # bci = BciInterface(connect_ip='localhost')
-    bci = BciInterface(connect_ip='169.254.123.102')
+    bci = BciInterface(connect_ip='pk')
     while True:
         try:
             data = int(raw_input('Trigger value (1-255)? ').strip())

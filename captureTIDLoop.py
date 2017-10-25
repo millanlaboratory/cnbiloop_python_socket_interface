@@ -15,7 +15,7 @@ print fakeData[0]
 # Arguments
 terminateKey = 'c'  # to terminate this loop
 ip_protocol = '127.0.0.1'  # '169.254.123.101'
-ip_cnbiloop = '169.254.123.102'
+ip_cnbiloop = '192.198.1.1'
 port_protocol = 9999
 BufferSize = 1024
 socket.setdefaulttimeout(1)

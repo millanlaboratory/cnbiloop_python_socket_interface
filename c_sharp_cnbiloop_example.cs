@@ -15,7 +15,7 @@ public class cnbiloop : MonoBehaviour {
     //UDP for MATLAB, by PK
     bool MATLABCommand = true;
     private string remoteIPPythonLoop = "127.0.0.1";
-    //private string remoteIPPythonLoop = "169.254.123.101";
+    //private string remoteIPPythonLoop = "192.168.1.1";
     private int localPortGetTOBIID = 9999; 
     private int localPortSendTOBIID = 9990;
     private IPEndPoint remoteEndPointGetTOBIID;

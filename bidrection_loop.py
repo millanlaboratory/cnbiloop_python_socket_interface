@@ -19,7 +19,7 @@ print fakeData[0]
 # Arguments
 terminateKey = 'c'  # to terminate this loop
 ip_protocol = '127.0.0.1'  # '169.254.123.101'
-ip_cnbiloop = '169.254.123.102'
+ip_cnbiloop = '192.168.1.1'
 port_tid_to_protocol = 9999
 port_tid_from_protocol = 9990
 BufferSize = 1024

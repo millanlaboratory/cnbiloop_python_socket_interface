@@ -27,7 +27,7 @@ class BciInterface:
         if connect_ip is 'localhost':
             connect_ip = '127.0.0.1'
         elif connect_ip is 'pk':
-            connect_ip = '169.254.123.102'
+            connect_ip = '192.168.1.1'
         print 'BCI interface will connect:', connect_ip
         self.iDIP_bus = connect_ip
         self.iDport_bus = id_port_bus
