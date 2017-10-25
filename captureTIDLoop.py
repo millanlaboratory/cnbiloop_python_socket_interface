@@ -14,7 +14,7 @@ print fakeData[0]
 
 # Arguments
 terminateKey = 'c'  # to terminate this loop
-ip_protocol = '127.0.0.1'  # '169.254.123.101'
+ip_python = '127.0.0.1'  # '169.254.123.101'
 ip_cnbiloop = '192.198.1.1'
 port_protocol = 9999
 BufferSize = 1024
@@ -87,7 +87,7 @@ screen = pygame.display.set_mode((60, 60))
 pygame.display.set_caption('Pygame Keyboard Test')
 
 # Host a server
-serverAddress = (ip_protocol, port_protocol)
+serverAddress = (ip_python, port_protocol)
 sockHost = createServer(serverAddress)
 # Wait for connection
 sockClient, clientAddress, flag, establishedTime = waitForConnection(sockHost, terminateKey)
@@ -123,7 +123,7 @@ while not flag:
             sockClient.sendall(data)
             '''
             #sockHost.sendall(data)
-            #sockHost.sendto(data, (ip_protocol, port_protocol))
+            #sockHost.sendto(data, (ip_python, port_protocol))
             #sockHost.sendto(data, sockHost)
             #sockHost.sendto(data, clientAddress)
             #sockHost.sendto(data, sockClient)

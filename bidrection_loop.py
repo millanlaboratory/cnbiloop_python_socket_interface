@@ -18,7 +18,7 @@ print fakeData[0]
 
 # Arguments
 terminateKey = 'c'  # to terminate this loop
-ip_protocol = '127.0.0.1'  # '169.254.123.101'
+ip_python = '192.168.1.1'  # '169.254.123.101'
 ip_cnbiloop = '192.168.1.1'
 port_tid_to_protocol = 9999
 port_tid_from_protocol = 9990
@@ -87,7 +87,7 @@ def create_server(server_address):
 
 
 class BidirectionalInterface:
-    def __init__(self, ip_cnbiloop, ip_protocol):
+    def __init__(self, ip_cnbiloop, ip_python):
         pygame.init()
         screen = pygame.display.set_mode((60, 60))
         pygame.display.set_caption('Pygame Keyboard Test')
@@ -95,14 +95,14 @@ class BidirectionalInterface:
         self.finish = False
         self.bci = BciInterface(connect_ip=ip_cnbiloop)
         self.ip_cnbiloop = ip_cnbiloop
-        self.ip_protocol = ip_protocol
+        self.ip_python = ip_python
         self.port_tid_to_protocol = port_tid_to_protocol
         self.port_tid_from_protocol = port_tid_from_protocol
 
         # Host servers
-        server_address = (ip_protocol, port_tid_to_protocol)
+        server_address = (ip_python, port_tid_to_protocol)
         self.sockHostToProtocol = create_server(server_address)
-        server_address = (ip_protocol, port_tid_from_protocol)
+        server_address = (ip_python, port_tid_from_protocol)
         self.sockHostFromProtocol = create_server(server_address)
 
         # Wait for connection
@@ -203,6 +203,6 @@ class BidirectionalInterface:
         pygame.quit()
 
 if __name__ == "__main__":
-    b_inf = BidirectionalInterface(ip_protocol=ip_protocol, ip_cnbiloop=ip_cnbiloop)
+    b_inf = BidirectionalInterface(ip_python=ip_python, ip_cnbiloop=ip_cnbiloop)
     while not b_inf.finish:
         pass
