@@ -5,7 +5,7 @@ Author: Ping-Keng Jao
 from BCI import BciInterface
 
 if __name__ == "__main__":
-    # bci = BciInterface(connect_ip='localhost')
+    #bci = BciInterface(connect_ip='localhost')
     bci = BciInterface(connect_ip='pk')
     while True:
         try:

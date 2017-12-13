@@ -60,6 +60,7 @@ def wait_for_connection(sock_host, terminate_key):
 
 def create_server(server_address):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # force releasing address
     s.bind(server_address)
     s.listen(1)
     return s
@@ -105,11 +106,11 @@ class BidirectionalInterface:
         self.proc = []
         if to_cnbiloop:
             if manual_trigger:
-                self.init_mp_process(self.send_manual_trigger_daemon())
+                self.init_mp_process(self.send_manual_trigger_daemon)
             else:
-                self.init_mp_process(self.send_tid_daemon())
+                self.init_mp_process(self.send_tid_daemon)
         if from_cnbiloop:
-            self.init_mp_process(self.receive_tid_daemon())
+            self.init_mp_process(self.receive_tid_daemon)
         atexit.register(self._close())  # close socket on program termination, no matter what!
 
     def _close(self):
@@ -123,7 +124,7 @@ class BidirectionalInterface:
         # self.sockClientFromProtocol.close()
         # self.sockClientToProtocol.close()
 
-    def init_mp_process(self, target_func):
+    def init_mp_process(self, target_func):	
         self.proc.append(mp.Process(group=None, target=target_func))
         self.proc[-1].start()
 
@@ -172,7 +173,7 @@ class BidirectionalInterface:
 
     def receive_tid_daemon(self):
         n_data = 0
-        while True:
+        while not self.finish:
             # receive TiD Event
             data = handle_tobiid_input(self.bci)
             # if data:
