@@ -21,7 +21,12 @@ def handle_tobiid_input(bci):
 
 def parse_data(data):
     try:
+	#print data
         idx1 = data.find('event=\"')
+	# print 'idx1:', idx1
+	if idx1 is -1: # does not find
+	    return None	
+
         n = len('event=\"')
         # print 'idx1', idx1
         # print 'substr', data[idx1+n:]
@@ -60,7 +65,7 @@ def wait_for_connection(sock_host, terminate_key):
 
 def create_server(server_address):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # force releasing address
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind(server_address)
     s.listen(1)
     return s
@@ -82,9 +87,14 @@ class BidirectionalInterface:
         self.port_tid_from_protocol = port_tid_to_cnbiloop
         self.to_cnbiloop = to_cnbiloop
         self.from_cnbiloop = from_cnbiloop
+	self.manual_trigger = manual_trigger
         self.terminateKey = 'c'
         self.videoMode = False
-
+        self.reconnect = True
+	self.proc = []
+	self.run()
+    
+    '''
         # Host servers
         if self.from_cnbiloop:
             server_address = (ip_python, port_tid_from_cnbiloop)
@@ -92,7 +102,9 @@ class BidirectionalInterface:
         if self.to_cnbiloop:
             server_address = (ip_python, port_tid_to_cnbiloop)
             self.sockHostFromProtocol = create_server(server_address)
-
+    '''
+	
+    '''	
         # Wait for connection
         if self.from_cnbiloop:
             self.sockClientToProtocol, self.clientAddress, self.finish, self.established_time = \
@@ -103,7 +115,6 @@ class BidirectionalInterface:
                 wait_for_connection(self.sockHostFromProtocol, self.terminateKey)
             print 'connected to: ', self.clientAddressFromProtocol
 
-        self.proc = []
         if to_cnbiloop:
             if manual_trigger:
                 self.init_mp_process(self.send_manual_trigger_daemon)
@@ -111,7 +122,53 @@ class BidirectionalInterface:
                 self.init_mp_process(self.send_tid_daemon)
         if from_cnbiloop:
             self.init_mp_process(self.receive_tid_daemon)
-        atexit.register(self._close())  # close socket on program termination, no matter what!
+    '''
+
+    def run(self):
+	host_server = True
+	while True:
+            # check if reconnection is required
+	    if self.reconnect:
+		print 'here'
+		# Host servers
+		if self.from_cnbiloop and host_server:
+		    server_address = (self.ip_python, self.port_tid_to_protocol)
+		    self.sockHostToProtocol = create_server(server_address)
+		if self.to_cnbiloop and host_server:
+		    server_address = (self.ip_python, self.port_tid_from_protocol)
+		    self.sockHostFromProtocol = create_server(server_address)
+		self.bci.close()
+		self.finish = [True, True]
+		if self.from_cnbiloop:
+		    self.sockClientToProtocol, self.clientAddress, self.finish[0], self.established_time = \
+			wait_for_connection(self.sockHostToProtocol, self.terminateKey)
+		    print 'connected to: ', self.clientAddress
+		if self.to_cnbiloop:
+		    self.sockClientFromProtocol, self.clientAddressFromProtocol, self.finish[1], self.established_time = \
+			wait_for_connection(self.sockHostFromProtocol, self.terminateKey)
+		    print 'connected to: ', self.clientAddressFromProtocol
+	
+		if self.finish[0] is True and self.finish[1] is True:
+		    return
+		self.reconnect = False
+                self.bci = BciInterface(self.ip_cnbiloop)
+		self.proc = []
+		if self.to_cnbiloop:
+		    if self.manual_trigger:
+		        self.init_mp_process(self.send_manual_trigger_daemon)
+		    else:
+		        self.init_mp_process(self.send_tid_daemon)
+		if self.from_cnbiloop:
+		    self.init_mp_process(self.receive_tid_daemon)
+		atexit.register(self._close)  # close socket on program termination, no matter what!
+		self.sockHostToProtocol.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		self.sockHostFromProtocol.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+	        for proc in self.proc:
+		    print proc	
+		    proc.join()
+                self.reconnect = True
+		host_server = False  # no need to host again...
+
 
     def _close(self):
         for i in range(0, len(self.proc)):
@@ -124,8 +181,8 @@ class BidirectionalInterface:
         # self.sockClientFromProtocol.close()
         # self.sockClientToProtocol.close()
 
-    def init_mp_process(self, target_func):	
-        self.proc.append(mp.Process(group=None, target=target_func))
+    def init_mp_process(self, target_func):
+        self.proc.append(mp.Process(group=None,	 target=target_func))
         self.proc[-1].start()
 
     def send_manual_trigger_daemon(self):
@@ -138,10 +195,10 @@ class BidirectionalInterface:
                 print('Sent', data)
             except KeyboardInterrupt:
                 self.finish = True
-                break
+		break
 
     def send_tid_daemon(self):
-        while not self.finish:
+        while True:
             # data = receive(self.sockHostFromProtocol)
             data = []
             try:
@@ -152,9 +209,12 @@ class BidirectionalInterface:
                 if len(data) >= 2:
                     data = data[-2]  # take the last one with number, if just last one, it will be an empty string
                 else:
+		    break
+		    '''
                     self.sockClientFromProtocol, self.clientAddressFromProtocol, self.finish, self.established_time = \
                         wait_for_connection(self.sockHostFromProtocol, self.terminateKey)
                     data = []
+                    '''
             except socket.error as e:
                 # print e
                 pass
@@ -173,7 +233,7 @@ class BidirectionalInterface:
 
     def receive_tid_daemon(self):
         n_data = 0
-        while not self.finish:
+        while True:
             # receive TiD Event
             data = handle_tobiid_input(self.bci)
             # if data:
@@ -192,14 +252,12 @@ class BidirectionalInterface:
                         self.sockClientToProtocol.sendall(data)
                 except socket.error:
                     print 'Failed to send data...reconnecting...'
+		    break
+	            
+	            '''
                     self.bci.close()
                     self.sockClientToProtocol, self.clientAddress, self.finish, self.established_time = \
                         wait_for_connection(self.sockHostToProtocol, self.terminateKey)
                     self.bci = BciInterface(self.ip_cnbiloop)
                     n_data = 0
-            if self.finish:
-                break
-            continue
-        self._close()
-        print 'Interface terminated!'
-        pygame.quit()
+                    '''
