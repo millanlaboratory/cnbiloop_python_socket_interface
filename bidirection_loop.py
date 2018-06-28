@@ -5,7 +5,7 @@ import socket
 
 # Arguments
 ip_python = '192.168.1.1'  # '169.254.123.101'
-ip_cnbiloop = '192.168.1.1'
+ip_cnbiloop = '127.0.0.1' # '192.168.1.1'
 port_tid_to_protocol = 9999
 port_tid_from_protocol = 9990
 socket.setdefaulttimeout(1)
